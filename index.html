@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireworks</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: black;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple'];
+
+        function getRandomColor() {
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function Firework(x, y) {
+            this.x = x;
+            this.y = y;
+            this.radius = Math.random() * 3 + 1;
+            this.color1 = getRandomColor();
+            this.color2 = getRandomColor();
+            while (this.color1 === this.color2) {
+                this.color2 = getRandomColor();
+            }
+            this.speedX = Math.random() * 2 - 1;
+            this.speedY = Math.random() * 2 - 1;
+            this.alpha = 1;
+            this.decay = Math.random() * 0.02 + 0.01;
+
+            this.update = function() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.alpha -= this.decay;
+            };
+
+            this.draw = function() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                gradient.addColorStop(0, this.color1);
+                gradient.addColorStop(1, this.color2);
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            };
+        }
+
+        function launchFireworks() {
+            const fireworks = [];
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    for (let j = 0; j < 15; j++) {
+                        const x = Math.random() * canvas.width;
+                        const y = Math.random() * canvas.height;
+                        fireworks.push(new Firework(x, y));
+                    }
+                }, i * 2000);
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < fireworks.length; i++) {
+                    fireworks[i].update();
+                    fireworks[i].draw();
+                    if (fireworks[i].alpha <= 0) {
+                        fireworks.splice(i, 1);
+                        i--;
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        launchFireworks();
+    </script>
+</body>
+</html>
