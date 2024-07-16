@@ -30,17 +30,14 @@
             return colors[Math.floor(Math.random() * colors.length)];
         }
 
-        function Firework(x, y) {
+        function Particle(x, y, color1, color2) {
             this.x = x;
             this.y = y;
             this.radius = Math.random() * 3 + 1;
-            this.color1 = getRandomColor();
-            this.color2 = getRandomColor();
-            while (this.color1 === this.color2) {
-                this.color2 = getRandomColor();
-            }
-            this.speedX = Math.random() * 2 - 1;
-            this.speedY = Math.random() * 2 - 1;
+            this.color1 = color1;
+            this.color2 = color2;
+            this.speedX = Math.random() * 4 - 2;
+            this.speedY = Math.random() * 4 - 2;
             this.alpha = 1;
             this.decay = Math.random() * 0.02 + 0.01;
 
@@ -64,15 +61,41 @@
             };
         }
 
+        function Firework(x, y) {
+            this.particles = [];
+            const color1 = getRandomColor();
+            const color2 = getRandomColor();
+            while (color1 === color2) {
+                color2 = getRandomColor();
+            }
+            for (let i = 0; i < 15; i++) {
+                this.particles.push(new Particle(x, y, color1, color2));
+            }
+
+            this.update = function() {
+                for (let i = 0; i < this.particles.length; i++) {
+                    this.particles[i].update();
+                    if (this.particles[i].alpha <= 0) {
+                        this.particles.splice(i, 1);
+                        i--;
+                    }
+                }
+            };
+
+            this.draw = function() {
+                for (let i = 0; i < this.particles.length; i++) {
+                    this.particles[i].draw();
+                }
+            };
+        }
+
         function launchFireworks() {
             const fireworks = [];
             for (let i = 0; i < 3; i++) {
                 setTimeout(() => {
-                    for (let j = 0; j < 15; j++) {
-                        const x = Math.random() * canvas.width;
-                        const y = Math.random() * canvas.height;
-                        fireworks.push(new Firework(x, y));
-                    }
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    fireworks.push(new Firework(x, y));
                 }, i * 2000);
             }
 
@@ -81,7 +104,7 @@
                 for (let i = 0; i < fireworks.length; i++) {
                     fireworks[i].update();
                     fireworks[i].draw();
-                    if (fireworks[i].alpha <= 0) {
+                    if (fireworks[i].particles.length === 0) {
                         fireworks.splice(i, 1);
                         i--;
                     }
